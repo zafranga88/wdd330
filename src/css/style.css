@@ -337,11 +337,11 @@ button {
   }
 }
 
-  .cart-card__remove {
-    width: 28px;
-    height: 28px;
-    font-size: 18px;
-  }
+.cart-card__remove {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+}
 
 footer {
   font-size: var(--small-font);

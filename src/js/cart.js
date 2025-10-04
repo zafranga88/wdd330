@@ -7,6 +7,9 @@ function renderCartContents() {
 
   // Add event listeners to all remove buttons after rendering
   addRemoveListeners();
+  
+  // Calculate and display cart total
+  displayCartTotal(cartItems);
 }
 
 function cartItemTemplate(item) {
@@ -22,13 +25,25 @@ function cartItemTemplate(item) {
   </a>
   <p class="cart-card__color">${item.Colors[0].ColorName}</p>
   <p class="cart-card__quantity">qty: 1</p>
-  <p class="cart-card__price">${item.FinalPrice}</p>
+  <p class="cart-card__price">$${item.FinalPrice}</p>
   <button class="cart-card__remove" data-id="${item.Id}" aria-label="Remove ${item.Name} from cart">
     ✕
   </button>
 </li>`;
 
   return newItem;
+}
+
+function displayCartTotal(cartItems) {
+  const total = cartItems.reduce((sum, item) => sum + item.FinalPrice, 0);
+  const cartFooterElement = document.querySelector(".cart-footer");
+  
+  if (cartItems.length > 0) {
+    cartFooterElement.classList.remove("hide");
+    document.querySelector(".cart-total").textContent = `$${total.toFixed(2)}`;
+  } else {
+    cartFooterElement.classList.add("hide");
+  }
 }
 
 function addRemoveListeners() {

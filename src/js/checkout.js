@@ -1,43 +1,25 @@
-import { getLocalStorage } from "./utils.mjs";
+import { loadHeaderFooter } from "./utils.mjs";
+import CheckoutProcess from "./CheckoutProcess.mjs";
 
-function renderCartTotal() {
-    const cartItems = getLocalStorage("so-cart");
-    if (!cartItems || cartItems.length === 0) {
-        document.querySelector(".cart-total").style.display = "none";
-        return;
-    }
+loadHeaderFooter();
 
-    const total = cartItems.reduce((sum, item) => sum + item.FinalPrice, 0);
+const myCheckout = new CheckoutProcess("so-cart", ".checkout-summary");
+myCheckout.init();
 
-    document.querySelector(".cart-total").style.display = "block";
-    document.querySelector("#cart-total").textContent = `$${total.toFixed(2)}`;
-}
+document
+  .querySelector("#zip")
+  .addEventListener("blur", myCheckout.calculateOrdertotal.bind(myCheckout));
+// listening for click on the button
+document.querySelector("#checkoutSubmit").addEventListener("click", (e) => {
+  e.preventDefault();
 
-function checkoutSubmit(e) {
-    e.preventDefault();
+  myCheckout.checkout();
+});
 
-    const form = document.forms["checkout"];
-    const formData = new FormData(form);
-    const json = Object.fromEntries(formData.entries());
-
-    // Add items from cart
-    json.items = getLocalStorage("so-cart");
-
-    console.log("Order data:", json);
-
-    // Here you would normally send to a server
-    // For now, just alert success
-    alert("Order submitted successfully!");
-
-    // Clear the cart
-    localStorage.removeItem("so-cart");
-
-    // Redirect to home or confirmation page
-    window.location.href = "/index.html";
-}
-
-renderCartTotal();
-
-// Attach submit handler
-document.querySelector("#checkout-form")
-    .addEventListener("submit", checkoutSubmit);
+// this is how it would look if we listen for the submit on the form
+// document.forms['checkout']
+// .addEventListener('submit', (e) => {
+//   e.preventDefault();
+//   // e.target would contain our form in this case
+//    myCheckout.checkout();
+// });

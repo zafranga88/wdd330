@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spending - Personal Finance Tracker</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="scripts/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Your Name</h1>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="spending.html">Spending</a>
+            <a href="goals.html">Goals</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Add New Spending</h2>
+            
+            <form>
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description" required>
+
+                <label for="amount">Amount</label>
+                <input type="number" id="amount" name="amount" step="0.01" required>
+
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="">Select a category</option>
+                    <option value="groceries">Groceries</option>
+                    <option value="transport">Transport</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="other">Other</option>
+                </select>
+
+                <button type="submit">Add Spending</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Spending History</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Grocery shopping</td>
+                        <td>Groceries</td>
+                        <td>$125.50</td>
+                    </tr>
+                    <tr>
+                        <td>Gas station</td>
+                        <td>Transport</td>
+                        <td>$45.00</td>
+                    </tr>
+                    <tr>
+                        <td>Movie tickets</td>
+                        <td>Entertainment</td>
+                        <td>$28.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Personal Finance Tracker</p>
+    </footer>
+</body>
+</html>

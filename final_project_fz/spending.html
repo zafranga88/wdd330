@@ -10,13 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="scripts/script.js" defer></script>
     <script src="scripts/api.js" defer></script>
+    <script src="scripts/storage.js" defer></script>
+    <script type="module" src="scripts/currency.js" defer></script>
 </head>
 <body>
     <header>
-        <h1>Your Name</h1>
+        <h1>Spendings</h1>
         <nav>
             <a href="index.html">Dashboard</a>
-            <a href="spending.html">Spending</a>
+            <a href="spending.html" class="active">Spending</a>
             <a href="goals.html">Goals</a>
         </nav>
     </header>
@@ -27,20 +29,22 @@
             
             <form>
                 <label for="description">Description</label>
-                <input type="text" id="description" name="description" required>
+                <input type="text" id="description" name="description" placeholder="e.g., Grocery shopping" required>
 
                 <label for="amount">Amount</label>
-                <input type="number" id="amount" name="amount" step="0.01" required>
+                <input type="number" id="amount" name="amount" step="0.01" placeholder="0.00" required>
 
                 <label for="category">Category</label>
                 <select id="category" name="category" required>
                     <option value="">Select a category</option>
-                    <option value="groceries">Groceries</option>
-                    <option value="transport">Transport</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="other">Other</option>
+                    <option value="Groceries">Groceries</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Dining">Dining</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Other">Other</option>
                 </select>
 
                 <button type="submit">Add Spending</button>
@@ -59,28 +63,76 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Grocery shopping</td>
-                        <td>Groceries</td>
-                        <td>$125.50</td>
-                    </tr>
-                    <tr>
-                        <td>Gas station</td>
-                        <td>Transport</td>
-                        <td>$45.00</td>
-                    </tr>
-                    <tr>
-                        <td>Movie tickets</td>
-                        <td>Entertainment</td>
-                        <td>$28.00</td>
-                    </tr>
+                    <!-- Spending items will be added here dynamically -->
                 </tbody>
             </table>
+        </section>
+
+        <section id="currency-converter">
+            <h2>Currency Converter</h2>
+            
+            <div class="currency-grid">
+                <!-- Exchange Rates Table -->
+                <article>
+                    <h3>Current Exchange Rates</h3>
+                    <p id="rates-last-updated" class="small-text">Loading rates...</p>
+                    <table id="rates-table">
+                        <thead>
+                            <tr>
+                                <th>Currency</th>
+                                <th>Rate (per USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rates will be populated here -->
+                        </tbody>
+                    </table>
+                </article>
+
+                <!-- Currency Converter Form -->
+                <article>
+                    <h3>Convert Currency</h3>
+                    
+                    <div class="converter-form">
+                        <label for="convert-amount">Amount</label>
+                        <input type="number" id="convert-amount" step="0.01" value="100" min="0">
+                        
+                        <label for="convert-from">From</label>
+                        <select id="convert-from">
+                            <option value="USD" selected>USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                        </select>
+                        
+                        <button type="button" id="swap-currencies" class="swap-btn">⇅ Swap</button>
+                        
+                        <label for="convert-to">To</label>
+                        <select id="convert-to">
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR" selected>EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                        </select>
+                        
+                        <button type="button" id="convert-btn">Convert</button>
+                        
+                        <div id="conversion-result" class="conversion-result">
+                            <!-- Conversion result will appear here -->
+                        </div>
+                    </div>
+                </article>
+            </div>
         </section>
     </main>
 
     <footer>
         <p>&copy; 2025 Personal Finance Tracker</p>
     </footer>
+
 </body>
 </html>

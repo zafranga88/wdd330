@@ -10,6 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="scripts/script.js" defer></script>
     <script src="scripts/api.js" defer></script>
+    <script src="scripts/storage.js" defer></script>
+    <script src="scripts/portfolio.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script type="module" src="scripts/news.js" defer></script>
 </head>
 <body>
     <header>
@@ -22,6 +26,113 @@
     </header>
 
     <main>
+
+        <section id="market-news" class="news-section">
+            <h2>Market News</h2>
+            <div id="news-container" class="news-grid"></div>
+        </section>
+
+        <section>
+            <h2>Search Stocks</h2>
+            <div class="search-container">
+                <input 
+                type="text" 
+                id="stock-search" 
+                placeholder="Search for stocks (e.g., AAPL, MSFT, TSLA)..."
+                autocomplete="off"
+                >
+                <div id="search-results"></div>
+            </div>
+        </section>
+
+        <!-- Stock Info Display -->
+        <section>
+            <h2>Stock Information</h2>
+            <article id="stock-info">
+                <p style="text-align: center; color: var(--medium-gray); padding: 2rem;">
+                    Search for a stock symbol above to view real-time information
+                </p>
+            </article>
+        </section>
+
+                <!-- Stock Chart -->
+        <section>
+            <h2>Price Chart (30 Days)</h2>
+            <article id="stock-chart">
+                <p style="text-align: center; color: var(--medium-gray); padding: 2rem;">
+                    Select a stock to view its price history
+                </p>
+            </article>
+        </section>
+
+                <!-- Add to Portfolio Form -->
+        <section>
+            <h2>Add to Portfolio</h2>
+            <form id="add-holding-form">
+                <label for="holding-symbol">Stock Symbol</label>
+                <input type="text" id="holding-symbol" name="holding-symbol" placeholder="e.g., AAPL" required>
+
+                <label for="holding-quantity">Quantity (Shares)</label>
+                <input type="number" id="holding-quantity" name="holding-quantity" step="0.01" min="0" placeholder="e.g., 10" required>
+
+                <label for="holding-cost">Average Cost per Share</label>
+                <input type="number" id="holding-cost" name="holding-cost" step="0.01" min="0" placeholder="e.g., 150.50" required>
+
+                <label for="holding-date">Purchase Date</label>
+                <input type="date" id="holding-date" name="holding-date">
+
+                <button type="submit">Add to Portfolio</button>
+            </form>
+        </section>
+
+                <!-- Portfolio Summary -->
+        <section>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin-bottom: 0;">Portfolio Summary</h2>
+                <button id="refresh-portfolio" class="refresh-btn">↻ Refresh</button>
+            </div>
+            <article id="portfolio-summary">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">Total Value</div>
+                        <div class="summary-value number">$0.00</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Total Cost</div>
+                        <div class="summary-value number">$0.00</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Total Gain/Loss</div>
+                        <div class="summary-value number">$0.00 (0%)</div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+                <!-- Portfolio Holdings -->
+        <section>
+            <h2>My Holdings</h2>
+            <table id="portfolio-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Shares</th>
+                        <th>Avg Cost</th>
+                        <th>Current Price</th>
+                        <th>Total Value</th>
+                        <th>Gain/Loss</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--medium-gray);">
+                            No holdings yet. Search for a stock to add to your portfolio.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
         <section>
             <h2>Financial Overview</h2>
             

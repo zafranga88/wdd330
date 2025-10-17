@@ -185,3 +185,36 @@ document.addEventListener('DOMContentLoaded', function() {
     initGoalsPage();
     updateDashboard();
 });
+
+// ===== HAMBURGER MENU =====
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburger = document.getElementById('hamburger');
+    const nav = document.getElementById('nav');
+    const overlay = document.getElementById('nav-overlay');
+    
+    if (hamburger && nav && overlay) {
+        // Toggle menu
+        hamburger.addEventListener('click', function() {
+            hamburger.classList.toggle('active');
+            nav.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+        
+        // Close menu when clicking overlay
+        overlay.addEventListener('click', function() {
+            hamburger.classList.remove('active');
+            nav.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+        
+        // Close menu when clicking a nav link
+        const navLinks = nav.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                hamburger.classList.remove('active');
+                nav.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        });
+    }
+});

@@ -2,7 +2,7 @@
 // This module handles portfolio display, stock search, and real-time data
 
 // ===== GLOBAL STATE =====
-let currentChart = null;
+
 let searchTimeout = null;
 
 // ===== UTILITY FUNCTIONS =====
@@ -194,119 +194,213 @@ function displayStockInfo(quote) {
 }
 
 /**
- * Display stock chart using Chart.js
+ * Display stock chart using Vanilla JavaScript Canvas
  */
 function displayStockChart(timeSeries, symbol) {
     const chartContainer = document.getElementById('stock-chart');
     
-    // Destroy existing chart
-    if (currentChart) {
-        currentChart.destroy();
+    if (!timeSeries || timeSeries.length === 0) {
+        chartContainer.innerHTML = '<p style="text-align: center; color: var(--medium-gray); padding: 2rem;">No chart data available</p>';
+        return;
     }
-
+    
+    // Clear container
+    chartContainer.innerHTML = '';
+    
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    canvas.id = 'price-chart';
+    canvas.width = 800;
+    canvas.height = 400;
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+    chartContainer.appendChild(canvas);
+    
+    const ctx = canvas.getContext('2d');
+    const padding = 60;
+    const chartWidth = canvas.width - padding * 2;
+    const chartHeight = canvas.height - padding * 2;
+    
     // Prepare data (reverse to show chronological order)
     const reversedData = [...timeSeries].reverse();
-    const labels = reversedData.map(item => item.date);
-    const prices = reversedData.map(item => item.close);
-
-    // Create canvas
-    chartContainer.innerHTML = '<canvas id="price-chart"></canvas>';
-    const ctx = document.getElementById('price-chart').getContext('2d');
-
+    const prices = reversedData.map(d => d.close);
+    const dates = reversedData.map(d => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const priceRange = maxPrice - minPrice || 1; // Prevent division by zero
+    
     // Determine color based on trend
     const firstPrice = prices[0];
     const lastPrice = prices[prices.length - 1];
     const isPositive = lastPrice >= firstPrice;
     const lineColor = isPositive ? '#10B981' : '#EF4444';
-    const gradientColor = isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-
-    // Create gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, gradientColor);
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
-    currentChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: `${symbol} Price`,
-                data: prices,
-                borderColor: lineColor,
-                backgroundColor: gradient,
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 6,
-                pointHoverBackgroundColor: lineColor,
-                pointHoverBorderColor: '#fff',
-                pointHoverBorderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            return 'Price: $' + context.parsed.y.toFixed(2);
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    display: true,
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        maxTicksLimit: 6,
-                        font: {
-                            size: 11
-                        }
-                    }
-                },
-                y: {
-                    display: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                        drawBorder: false
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toFixed(2);
-                        },
-                        font: {
-                            size: 11
-                        }
-                    }
-                }
-            },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
-            }
+    const fillColor = isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+    
+    // Clear canvas with white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid lines and Y-axis labels
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '11px Inter, sans-serif';
+    
+    for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        
+        // Grid line
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(canvas.width - padding, y);
+        ctx.stroke();
+        
+        // Y-axis label
+        const price = maxPrice - (priceRange / 5) * i;
+        ctx.textAlign = 'right';
+        ctx.fillText('$' + price.toFixed(2), padding - 10, y + 4);
+    }
+    
+    // Draw filled area under the line
+    ctx.fillStyle = fillColor;
+    ctx.beginPath();
+    
+    prices.forEach((price, index) => {
+        const x = padding + (chartWidth / (prices.length - 1)) * index;
+        const y = padding + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+        
+        if (index === 0) {
+            ctx.moveTo(x, canvas.height - padding);
+            ctx.lineTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
         }
     });
+    
+    ctx.lineTo(padding + chartWidth, canvas.height - padding);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw line chart
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    prices.forEach((price, index) => {
+        const x = padding + (chartWidth / (prices.length - 1)) * index;
+        const y = padding + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+        
+        if (index === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    
+    ctx.stroke();
+    
+    // Draw X-axis labels (show every 5th date)
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    
+    dates.forEach((date, index) => {
+        if (index % 5 === 0 || index === dates.length - 1) {
+            const x = padding + (chartWidth / (prices.length - 1)) * index;
+            ctx.fillText(date, x, canvas.height - padding + 20);
+        }
+    });
+    
+    // Draw title
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 14px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${symbol} - 30 Day Price History`, canvas.width / 2, 30);
+    
+    // Add hover interaction
+    addChartHoverInteraction(canvas, ctx, prices, dates, minPrice, maxPrice, priceRange, padding, chartWidth, chartHeight, lineColor);
 }
+
+/**
+ * Add hover tooltip to chart
+ */
+function addChartHoverInteraction(canvas, ctx, prices, dates, minPrice, maxPrice, priceRange, padding, chartWidth, chartHeight, lineColor) {
+    const tooltip = document.createElement('div');
+    tooltip.style.cssText = `
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        pointer-events: none;
+        display: none;
+        z-index: 1000;
+        font-family: Inter, sans-serif;
+    `;
+    canvas.parentElement.style.position = 'relative';
+    canvas.parentElement.appendChild(tooltip);
+    
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        
+        // Find closest data point
+        let closestIndex = -1;
+        let closestDistance = Infinity;
+        
+        prices.forEach((price, index) => {
+            const pointX = padding + (chartWidth / (prices.length - 1)) * index;
+            const pointY = padding + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+            const distance = Math.sqrt(Math.pow(x - pointX, 2) + Math.pow(y - pointY, 2));
+            
+            if (distance < 30 && distance < closestDistance) {
+                closestDistance = distance;
+                closestIndex = index;
+            }
+        });
+        
+        if (closestIndex !== -1) {
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.clientX - rect.left + 10) + 'px';
+            tooltip.style.top = (e.clientY - rect.top - 50) + 'px';
+            tooltip.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 4px;">${dates[closestIndex]}</div>
+                <div>Price: $${prices[closestIndex].toFixed(2)}</div>
+            `;
+            
+            // Draw hover point
+            const pointX = padding + (chartWidth / (prices.length - 1)) * closestIndex;
+            const pointY = padding + chartHeight - ((prices[closestIndex] - minPrice) / priceRange) * chartHeight;
+            
+            // Redraw chart (this prevents multiple dots)
+            displayStockChart(timeSeries, symbol);
+            
+            // Draw hover point
+            ctx.fillStyle = lineColor;
+            ctx.beginPath();
+            ctx.arc(pointX, pointY, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        } else {
+            tooltip.style.display = 'none';
+        }
+    });
+    
+    canvas.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+    });
+}
+
 
 // ===== PORTFOLIO HOLDINGS DISPLAY =====
 

@@ -787,11 +787,77 @@ const storageUtils = {
     }
 };
 
+// ===== INCOME =====
+
+const incomeStorage = {
+    /**
+     * Load all income
+     * @returns {Array} Array of income
+     */
+    load() {
+        const data = localStorage.getItem('finance_income');
+        return safeParse(data, []);
+    },
+
+    /**
+     * Save income
+     * @param {Array} income - Array of income objects
+     * @returns {boolean} Success status
+     */
+    save(income) {
+        const data = safeStringify(income);
+        if (data) {
+            localStorage.setItem('finance_income', data);
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * Add a new income entry
+     * @param {Object} income - Income object {description, amount, source}
+     * @returns {Object} Added income with id
+     */
+    add(income) {
+        const incomes = this.load();
+        const newIncome = {
+            id: generateId(),
+            date: new Date().toISOString(),
+            description: income.description,
+            amount: parseFloat(income.amount),
+            source: income.source,
+            createdAt: new Date().toISOString()
+        };
+        incomes.push(newIncome);
+        this.save(incomes);
+        return newIncome;
+    },
+
+    /**
+     * Get total income
+     * @returns {number} Total income amount
+     */
+    getTotal() {
+        const incomes = this.load();
+        return incomes.reduce((total, item) => total + item.amount, 0);
+    },
+
+    /**
+     * Clear all income
+     * @returns {boolean} Success status
+     */
+    clear() {
+        localStorage.removeItem('finance_income');
+        return true;
+    }
+};
+
 // ===== EXPORT FUNCTIONS =====
 window.storage = {
     portfolio: portfolioStorage,
     transactions: transactionStorage,
     expenses: expenseStorage,
+    income: incomeStorage,  
     goals: goalStorage,
     settings: settingsStorage,
     cache: cacheStorage,
@@ -800,3 +866,4 @@ window.storage = {
 
 console.log('Storage module loaded successfully');
 console.log('Available: storage.portfolio, storage.transactions, storage.expenses, storage.goals, storage.settings, storage.cache, storage.utils');
+

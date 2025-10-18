@@ -1,5 +1,6 @@
 // ===== DATA STORAGE =====
 // Load data from localStorage or initialize empty arrays
+let incomeItems = JSON.parse(localStorage.getItem('incomeItems')) || [];
 let spendingItems = JSON.parse(localStorage.getItem('spendingItems')) || [];
 let savingsGoals = JSON.parse(localStorage.getItem('savingsGoals')) || [];
 
@@ -19,6 +20,7 @@ function calculatePercentage(current, target) {
 function saveToLocalStorage() {
     localStorage.setItem('spendingItems', JSON.stringify(spendingItems));
     localStorage.setItem('savingsGoals', JSON.stringify(savingsGoals));
+    localStorage.setItem('incomeItems', JSON.stringify(incomeItems));  // ADD THIS LINE
 }
 
 // ===== SPENDING PAGE FUNCTIONS =====
@@ -52,6 +54,10 @@ function displaySpendingItem(item) {
         <td>${item.description}</td>
         <td>${item.category}</td>
         <td class="number">${formatCurrency(item.amount)}</td>
+        <td class="action-buttons">
+            <button class="btn-edit-small" onclick="editSpendingItem(${item.id})" title="Edit">✏️</button>
+            <button class="btn-delete-small" onclick="deleteSpendingItem(${item.id})" title="Delete">🗑️</button>
+        </td>
     `;
     
     tbody.appendChild(row);
@@ -65,8 +71,12 @@ function initSpendingPage() {
     
     // Load existing spending items
     const tbody = document.querySelector('table tbody');
-    tbody.innerHTML = ''; // Clear sample data
+    tbody.innerHTML = '';
+    if (spendingItems.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--medium-gray);">No spending recorded yet</td></tr>';
+    } else {
     spendingItems.forEach(item => displaySpendingItem(item));
+    }
     
     // Handle form submission
     form.addEventListener('submit', function(e) {
@@ -83,6 +93,173 @@ function initSpendingPage() {
     });
 }
 
+// Edit spending item
+function editSpendingItem(id) {
+    const item = spendingItems.find(i => i.id === id);
+    if (!item) return;
+    
+    // Populate form
+    document.getElementById('description').value = item.description;
+    document.getElementById('amount').value = item.amount;
+    document.getElementById('category').value = item.category;
+    
+    // Delete old item
+    deleteSpendingItem(id, false);
+    
+    // Scroll to form
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Delete spending item
+function deleteSpendingItem(id, confirm = true) {
+    if (confirm && !window.confirm('Are you sure you want to delete this spending item?')) {
+        return;
+    }
+    
+    // Remove from array
+    spendingItems = spendingItems.filter(item => item.id !== id);
+    
+    // Save to localStorage
+    saveToLocalStorage();
+    
+    // Refresh table
+    const tbody = document.querySelector('table tbody');
+    tbody.innerHTML = '';
+    
+    if (spendingItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--medium-gray);">No spending recorded yet</td></tr>';
+    } else {
+        spendingItems.forEach(item => displaySpendingItem(item));
+    }
+    
+    // Update dashboard
+    updateDashboard();
+}
+
+// ===== INCOME PAGE FUNCTIONS =====
+
+// Add new income item
+function addIncomeItem(description, amount, source) {
+    const item = {
+        id: Date.now(),
+        description: description,
+        amount: parseFloat(amount),
+        source: source,
+        date: new Date().toISOString()
+    };
+    
+    // Add to array
+    incomeItems.push(item);
+    
+    // Save to localStorage
+    saveToLocalStorage();
+    
+    // Add to table
+    displayIncomeItem(item);
+}
+
+// Display an income item in the table
+function displayIncomeItem(item) {
+    const tbody = document.querySelector('#income-table tbody');
+    if (!tbody) return;
+    
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${item.description}</td>
+        <td>${item.source}</td>
+        <td class="number">${formatCurrency(item.amount)}</td>
+        <td class="action-buttons">
+            <button class="btn-edit-small" onclick="editIncomeItem(${item.id})" title="Edit">✏️</button>
+            <button class="btn-delete-small" onclick="deleteIncomeItem(${item.id})" title="Delete">🗑️</button>
+        </td>
+    `;
+    tbody.appendChild(row);
+}
+
+// Initialize income page
+function initIncomePage() {
+    const form = document.getElementById('income-form');
+    if (!form) return; // Not on income section
+    
+    // Load existing income items
+    const tbody = document.querySelector('#income-table tbody');
+    if (tbody) {
+        tbody.innerHTML = '';
+        
+        if (incomeItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--medium-gray);">No income recorded yet</td></tr>';
+        } else {
+            incomeItems.forEach(item => displayIncomeItem(item));
+        }
+    }
+    
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const description = document.getElementById('income-description').value;
+        const amount = document.getElementById('income-amount').value;
+        const source = document.getElementById('income-source').value;
+        
+        addIncomeItem(description, amount, source);
+        
+        // Clear "no income" message
+        const tbody = document.querySelector('#income-table tbody');
+        if (tbody && tbody.querySelector('td[colspan]')) {
+            tbody.innerHTML = '';
+            incomeItems.forEach(item => displayIncomeItem(item));
+        }
+        
+        // Reset form
+        form.reset();
+        
+        // Update dashboard
+        updateDashboard();
+    });
+}
+
+// Edit income item
+function editIncomeItem(id) {
+    const item = incomeItems.find(i => i.id === id);
+    if (!item) return;
+    
+    // Populate form
+    document.getElementById('income-description').value = item.description;
+    document.getElementById('income-amount').value = item.amount;
+    document.getElementById('income-source').value = item.source;
+    
+    // Delete old item
+    deleteIncomeItem(id, false);
+    
+    // Scroll to form
+    document.getElementById('income-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Delete income item
+function deleteIncomeItem(id, confirm = true) {
+    if (confirm && !window.confirm('Are you sure you want to delete this income item?')) {
+        return;
+    }
+    
+    // Remove from array
+    incomeItems = incomeItems.filter(item => item.id !== id);
+    
+    // Save to localStorage
+    saveToLocalStorage();
+    
+    // Refresh table
+    const tbody = document.querySelector('#income-table tbody');
+    tbody.innerHTML = '';
+    
+    if (incomeItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--medium-gray);">No income recorded yet</td></tr>';
+    } else {
+        incomeItems.forEach(item => displayIncomeItem(item));
+    }
+    
+    // Update dashboard
+    updateDashboard();
+}
 // ===== GOALS PAGE FUNCTIONS =====
 
 // Add new savings goal
@@ -159,20 +336,42 @@ function initGoalsPage() {
 
 // Update dashboard with totals
 function updateDashboard() {
-    const savingsElement = document.querySelector('article:nth-of-type(1) p');
-    const expensesElement = document.querySelector('article:nth-of-type(3) p');
+    // Try to find the Financial Overview section
+    const sections = document.querySelectorAll('section');
+    let financialSection = null;
     
-    if (!savingsElement || !expensesElement) return; // Not on dashboard
+    sections.forEach(section => {
+        const h2 = section.querySelector('h2');
+        if (h2 && h2.textContent.includes('Financial Overview')) {
+            financialSection = section;
+        }
+    });
     
-    // Calculate total savings from goals
-    const totalSavings = savingsGoals.reduce((sum, goal) => sum + goal.currentProgress, 0);
+    if (!financialSection) return; // Not on dashboard
     
-    // Calculate total expenses
+    const articles = financialSection.querySelectorAll('article');
+    if (articles.length < 3) return;
+    
+    const savingsElement = articles[0].querySelector('p');
+    const incomeElement = articles[1].querySelector('p');
+    const expensesElement = articles[2].querySelector('p');
+    
+    if (!savingsElement || !incomeElement || !expensesElement) return;
+    
+    // Calculate totals
+    const totalIncome = incomeItems.reduce((sum, item) => sum + item.amount, 0);
     const totalExpenses = spendingItems.reduce((sum, item) => sum + item.amount, 0);
+    const goalsSavings = savingsGoals.reduce((sum, goal) => sum + goal.currentProgress, 0);
+    
+    // Total savings = goals + (income - expenses)
+    const totalSavings = goalsSavings + (totalIncome - totalExpenses);
     
     // Update display
     savingsElement.textContent = formatCurrency(totalSavings);
     savingsElement.classList.add('number');
+    
+    incomeElement.textContent = formatCurrency(totalIncome);
+    incomeElement.classList.add('number');
     
     expensesElement.textContent = formatCurrency(totalExpenses);
     expensesElement.classList.add('number');
@@ -182,9 +381,12 @@ function updateDashboard() {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize based on which page we're on
     initSpendingPage();
+    initIncomePage();  
     initGoalsPage();
     updateDashboard();
 });
+
+
 
 // ===== HAMBURGER MENU =====
 document.addEventListener('DOMContentLoaded', function() {
